@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "referal-test-task"
+version = "0.1.0"
+description = ""
+authors = ["zabit <xaclafun1991@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.8"
+sqlalchemy = "^2.0.38"
+alembic = "^1.14.1"
+asyncpg = "^0.30.0"
+uvicorn = "^0.34.0"
+environs = "^14.1.0"
+pydantic-settings = "^2.7.1"
+aiosqlite = "^0.21.0"
+black = "^25.1.0"
+isort = "^6.0.0"
+flake8 = "^7.1.1"
+pre-commit = "^4.1.0"
+autoflake = "^2.3.1"
+orjson = "^3.10.15"
+sqladmin = "^0.20.1"
+itsdangerous = "^2.2.0"
+python-jose = "^3.3.0"
+python-multipart = "^0.0.20"
+passlib = "^1.7.4"
+bcrypt = "^4.2.1"
+pytest = "^8.3.4"
+factory-boy = "^3.3.3"
+pytest-asyncio = "^0.25.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

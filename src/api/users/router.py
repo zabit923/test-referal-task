@@ -27,13 +27,18 @@ async def register_user(
     user_exist = await user_service.user_exists(user_data.username, session)
     if user_exist:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="User already exist."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Такой пользователь уже существует.",
         )
     if referral_code:
+        code = await referral_service.get_referral_code(referral_code, session)
+        if not code.is_active:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
         referrer = await referral_service.get_referrer_by_code(referral_code, session)
         if not referrer:
             raise HTTPException(
-                status_code=400, detail="Invalid or expired referral code."
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Неверный реферальный код.",
             )
         new_user = await user_service.create_user(user_data, session)
         await referral_service.add_referral(referrer.id, new_user.id, session)
@@ -49,9 +54,7 @@ async def login_user(
 ):
     user = await user_service.get_user_by_username(login_data.username, session)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user."
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     password_valid = verify_password(
         password=login_data.password, password_hash=user.password
     )
@@ -66,6 +69,4 @@ async def login_user(
             refresh=True,
         )
         return {"access_token": access_token, "refresh_token": refresh_token}
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials."
-    )
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)

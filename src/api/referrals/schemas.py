@@ -12,10 +12,3 @@ class ReferralCodeRead(BaseModel):
     code: str
     expires_at: datetime
     is_active: bool
-
-
-class ReferralInfo(BaseModel):
-    id: int
-    username: str
-    email: str
-    referred_at: datetime

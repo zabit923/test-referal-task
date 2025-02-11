@@ -8,6 +8,13 @@ from core.database.models import Referral, ReferralCode, User
 
 class ReferralService:
     @staticmethod
+    async def get_referral_code(code: str, session: AsyncSession):
+        statement = select(ReferralCode).where(ReferralCode.code == code)
+        result = await session.execute(statement)
+        referral_code = result.scalars().first()
+        return referral_code
+
+    @staticmethod
     async def get_active_referral_code(user_id: int, session: AsyncSession):
         statement = select(ReferralCode).where(
             ReferralCode.owner_id == user_id,
@@ -66,15 +73,17 @@ class ReferralService:
         return result.scalars().first()
 
     @staticmethod
-    async def add_referral(
-        referrer_id: int, referred_user_id: int, session: AsyncSession
-    ):
-        referral = Referral(referrer_id=referrer_id, referred_user_id=referred_user_id)
+    async def add_referral(referrer_id: int, referred_id: int, session: AsyncSession):
+        referral = Referral(referrer_id=referrer_id, referred_id=referred_id)
         session.add(referral)
         await session.commit()
 
     @staticmethod
     async def get_referrals_by_referrer(referrer_id: int, session: AsyncSession):
-        statement = select(Referral).where(Referral.referrer_id == referrer_id)
+        statement = (
+            select(User)
+            .join(Referral, User.id == Referral.referred_id)
+            .where(Referral.referrer_id == referrer_id)
+        )
         result = await session.execute(statement)
         return result.scalars().all()

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import TIMESTAMP, Boolean, ForeignKey, String, func
+from sqlalchemy import TIMESTAMP, VARCHAR, Boolean, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database.models import Base, TableNameMixin
@@ -15,7 +15,7 @@ class ReferralCode(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
-    code: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    code: Mapped[str] = mapped_column(VARCHAR(8), unique=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
     )

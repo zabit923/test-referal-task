@@ -1,5 +1,5 @@
 from .base import Base, TableNameMixin
-from .refferals import Referral, ReferralCode
+from .referrals import Referral, ReferralCode
 from .users import User
 
 __all__ = (

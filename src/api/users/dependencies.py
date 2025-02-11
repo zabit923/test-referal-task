@@ -1,63 +1,25 @@
 from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from starlette.requests import Request
 
 from api.users.service import UserService
 from api.users.utils import decode_token
+from config import settings
 from core.database import get_async_session
 
 user_service = UserService()
-
-
-class TokenBearer(HTTPBearer):
-    def __init__(self, auto_error=True):
-        super().__init__(auto_error=auto_error)
-
-    async def __call__(self, request: Request):
-        creds = await super().__call__(request)
-        token = creds.credentials
-        token_data = decode_token(token)
-
-        if not self.token_valid(token):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token."
-            )
-
-        self.verify_token_data(token_data)
-        return token_data
-
-    def token_valid(self, token: str) -> bool:
-        token_data = decode_token(token)
-        return token_data is not None
-
-    def verify_token_data(self, token_data):
-        raise NotImplementedError("Please Override this method in child classes.")
-
-
-class AccessTokenBearer(TokenBearer):
-    def verify_token_data(self, token_data: dict) -> None:
-        if token_data and token_data["refresh"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User has provided an access token when a refresh token is needed",
-            )
-
-
-class RefreshTokenBearer(TokenBearer):
-    def verify_token_data(self, token_data: dict) -> None:
-        if token_data and not token_data["refresh"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User has provided an access token when a refresh token is needed",
-            )
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+SECRET_KEY = settings.secret.secret_key
 
 
 async def get_current_user(
-    request: Request, session: AsyncSession = Depends(get_async_session)
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    if request.user.is_authenticated:
-        user = await user_service.get_user_by_id(request.user.id, session)
-        return user
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    payload = decode_token(token)
+    user_id: int = payload.get("user_id")
+    user = await user_service.get_user_by_id(user_id, session)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    return user

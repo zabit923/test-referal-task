@@ -30,14 +30,13 @@ class AdminAuth(AuthenticationBackend):
                 )
             password_valid = verify_password(password, user.password)
             if password_valid:
-                if user.is_superuser:
-                    token = create_access_token(
-                        username=user.username,
-                        user_id=user.id,
-                        expires_delta=timedelta(hours=24),
-                    )
-                    request.session.update({"token": token})
-                    return True
+                token = create_access_token(
+                    username=user.username,
+                    user_id=user.id,
+                    expires_delta=timedelta(hours=24),
+                )
+                request.session.update({"token": token})
+                return True
             return False
 
     async def logout(self, request: Request) -> bool:

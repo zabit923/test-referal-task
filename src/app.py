@@ -3,17 +3,12 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
-from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
-from admin import (
-    AdminAuth,
-    UserAdmin,
-)
+from admin import AdminAuth, RefferalAdmin, RefferalCodeAdmin, UserAdmin
 from api.routers import router as api_router
 from config import settings
 from core.database.db import engine
-from core.security.jwt import HTTPAuthenticationMiddleware
 
 logging.basicConfig(
     format=settings.logging.log_format,
@@ -31,6 +26,8 @@ app.include_router(
 admin_auth = AdminAuth(secret_key=settings.secret.secret_key)
 admin = Admin(app=app, engine=engine, authentication_backend=admin_auth)
 admin.add_view(UserAdmin)
+admin.add_view(RefferalCodeAdmin)
+admin.add_view(RefferalAdmin)
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,8 +36,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(AuthenticationMiddleware, backend=HTTPAuthenticationMiddleware())
 
 if __name__ == "__main__":
     uvicorn.run(

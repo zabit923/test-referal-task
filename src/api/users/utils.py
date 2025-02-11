@@ -8,7 +8,6 @@ from starlette import status
 
 from config import JWT_ALGORITHM, settings
 
-
 SECRET = settings.secret.secret_key
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

@@ -1,9 +1,13 @@
 from datetime import datetime
+from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import VARCHAR, false, BOOLEAN, func, TIMESTAMP, String
+from sqlalchemy import TIMESTAMP, VARCHAR, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database.models import Base, TableNameMixin
+
+if TYPE_CHECKING:
+    from .refferals import Referral, ReferralCode
 
 
 class User(TableNameMixin, Base):
@@ -13,13 +17,22 @@ class User(TableNameMixin, Base):
     )
     email: Mapped[str] = mapped_column(VARCHAR(255), unique=True)
     password: Mapped[str] = mapped_column(String)
-    is_superuser: Mapped[bool] = mapped_column(BOOLEAN, server_default=false())
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
     )
 
-    referral_code = relationship("ReferralCode", back_populates="owner", uselist=False)
-    referrals = relationship("Referral", back_populates="referrer")
+    referral_code: Mapped["ReferralCode"] = relationship(
+        "ReferralCode", back_populates="owner", uselist=False
+    )
+    referrals: Mapped[List["Referral"]] = relationship(
+        "Referral", back_populates="referrer", foreign_keys="[Referral.referrer_id]"
+    )
+    invited_by: Mapped[Optional["Referral"]] = relationship(
+        "Referral",
+        back_populates="referred",
+        foreign_keys="[Referral.referred_id]",
+        uselist=False,
+    )
 
     def __repr__(self):
         return f"{self.username}"

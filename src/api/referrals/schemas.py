@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReferralCodeCreate(BaseModel):
@@ -12,3 +12,5 @@ class ReferralCodeRead(BaseModel):
     code: str
     expires_at: datetime
     is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)

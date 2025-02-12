@@ -1,7 +1,5 @@
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from starlette import status
 
 from core.database.models import User
 
@@ -28,8 +26,6 @@ class UserService:
         statement = select(User).where(User.id == user_id)
         result = await session.execute(statement)
         user = result.scalars().first()
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         return user
 
     @staticmethod
@@ -44,8 +40,6 @@ class UserService:
         statement = select(User).where(User.email == email)
         result = await session.execute(statement)
         user = result.scalars().first()
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         return user
 
     async def user_exists(self, username: str, session: AsyncSession) -> True | False:

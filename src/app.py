@@ -7,7 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from admin import AdminAuth, RefferalAdmin, RefferalCodeAdmin, UserAdmin
 from api.routers import router as api_router
-from config import settings
+from config import redis_client, settings
 from core.database.db import engine
 
 logging.basicConfig(
@@ -36,6 +36,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+async def shutdown_event():
+    await redis_client.aclose()
+
+
+app.add_event_handler("shutdown", shutdown_event)
 
 if __name__ == "__main__":
     uvicorn.run(

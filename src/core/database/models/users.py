@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database.models import Base, TableNameMixin
 
 if TYPE_CHECKING:
-    from .refferals import Referral, ReferralCode
+    from .referrals import Referral, ReferralCode
 
 
 class User(TableNameMixin, Base):
@@ -22,16 +22,20 @@ class User(TableNameMixin, Base):
     )
 
     referral_code: Mapped["ReferralCode"] = relationship(
-        "ReferralCode", back_populates="owner", uselist=False
+        "ReferralCode", back_populates="owner", uselist=False, lazy="selectin"
     )
     referrals: Mapped[List["Referral"]] = relationship(
-        "Referral", back_populates="referrer", foreign_keys="[Referral.referrer_id]"
+        "Referral",
+        back_populates="referrer",
+        foreign_keys="[Referral.referrer_id]",
+        lazy="selectin",
     )
     invited_by: Mapped[Optional["Referral"]] = relationship(
         "Referral",
         back_populates="referred",
         foreign_keys="[Referral.referred_id]",
         uselist=False,
+        lazy="selectin",
     )
 
     def __repr__(self):

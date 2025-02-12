@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Literal
 
+import redis.asyncio as aioredis
 from environs import Env
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
-
 
 env = Env()
 env.read_env()
@@ -31,6 +31,8 @@ JWT_ALGORITHM = "HS256"
 SECRET_KEY = env.str("SECRET_KEY")
 RESET_PASSWORD_TOKEN_SECRET = env.str("RESET_PASSWORD_TOKEN_SECRET")
 VERIFICATION_TOKEN_SECRET = env.str("VERIFICATION_TOKEN_SECRET")
+
+HUNTER_API_KEY = env.str("HUNTER_API_KEY")
 
 
 class SecretKey(BaseModel):
@@ -82,4 +84,7 @@ class Settings(BaseSettings):
     logging: LoggingConfig = LoggingConfig()
 
 
+redis_client = aioredis.from_url(
+    "redis://localhost:6379" if DEBUG else "redis://redis:6379", decode_responses=True
+)
 settings = Settings()

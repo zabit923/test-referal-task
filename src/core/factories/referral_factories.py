@@ -4,7 +4,8 @@ import factory
 from faker import Faker
 
 from core.database.models import Referral, ReferralCode
-from core.factories import UserFactory
+
+from .user_factory import UserFactory
 
 fake = Faker()
 

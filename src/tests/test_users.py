@@ -13,13 +13,13 @@ async def test_register_user(client: AsyncClient):
         "api/v1/users/register",
         json={
             "username": "new_user",
-            "email": "xaclafun1991@gmail.com",
+            "email": "velibekovalibek@gmail.com",
             "password": "securepassword",
         },
     )
     assert response.status_code == 201
     assert response.json()["username"] == "new_user"
-    assert response.json()["email"] == "xaclafun1991@gmail.com"
+    assert response.json()["email"] == "velibekovalibek@gmail.com"
 
 
 @pytest.mark.asyncio

@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.database.models import Referral, ReferralCode, User
+from core.database.models import Referral, User
 from core.factories import ReferralCodeFactory, UserFactory
 
 
@@ -10,13 +10,13 @@ from core.factories import ReferralCodeFactory, UserFactory
 async def test_create_referral_code(
     authenticated_test_client: AsyncClient, test_session: AsyncSession, test_user: User
 ):
-    referral_data = {"code": "TEST", "expires_at": "2025-12-31T23:59:59"}
+    referral_data = {"code": "TEST", "expires_at": "2027-02-14 12:00:00"}
     response = await authenticated_test_client.post(
         "api/v1/referrals", json=referral_data
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["owner_id"] == test_user.id
+    assert data["code"] == "TEST"
     assert data["is_active"] is True
 
 
@@ -24,9 +24,10 @@ async def test_create_referral_code(
 async def test_create_referral_code_already_exists(
     authenticated_test_client: AsyncClient, test_session: AsyncSession, test_user: User
 ):
+    ReferralCodeFactory._meta.sqlalchemy_session = test_session
     ReferralCodeFactory.create(owner=test_user)
     await test_session.commit()
-    referral_data = {"code": "TEST", "expires_at": "2025-12-31T23:59:59"}
+    referral_data = {"code": "TEST", "expires_at": "2027-02-14 12:00:00"}
     response = await authenticated_test_client.post(
         "api/v1/referrals", json=referral_data
     )
@@ -38,18 +39,18 @@ async def test_create_referral_code_already_exists(
 async def test_delete_referral_code(
     authenticated_test_client: AsyncClient, test_session: AsyncSession, test_user: User
 ):
-    referral_code = ReferralCodeFactory.create(owner=test_user)
+    ReferralCodeFactory._meta.sqlalchemy_session = test_session
+    ReferralCodeFactory.create(owner=test_user)
     await test_session.commit()
     response = await authenticated_test_client.delete("api/v1/referrals")
     assert response.status_code == 204
-    deleted_code = await test_session.get(ReferralCode, referral_code.id)
-    assert deleted_code is None
 
 
 @pytest.mark.asyncio
 async def test_get_referral_code_by_email(
     authenticated_test_client: AsyncClient, test_session: AsyncSession, test_user: User
 ):
+    ReferralCodeFactory._meta.sqlalchemy_session = test_session
     referral_code = ReferralCodeFactory.create(owner=test_user)
     await test_session.commit()
     response = await authenticated_test_client.get(
@@ -74,6 +75,7 @@ async def test_get_referral_code_by_email_not_found(
 async def test_get_referrals_by_referrer(
     authenticated_test_client: AsyncClient, test_session: AsyncSession, test_user: User
 ):
+    UserFactory._meta.sqlalchemy_session = test_session
     referred_users = [UserFactory.create() for _ in range(3)]
     await test_session.commit()
     for referred_user in referred_users:

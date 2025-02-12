@@ -61,10 +61,10 @@ async def test_user(test_session: AsyncSession) -> User:
 
 
 @pytest_asyncio.fixture
-def authenticated_test_client(client: AsyncClient, test_user: User):
+async def authenticated_test_client(client: AsyncClient, test_user: User):
     access_token = create_access_token(
         test_user.username, test_user.id, expires_delta=timedelta(seconds=5)
     )
-    client.cookies.update({"access_token": access_token})
+    client.headers.update({"Authorization": f"Bearer {access_token}"})
 
     yield client
